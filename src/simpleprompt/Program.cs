@@ -26,17 +26,17 @@ class Program
         
         Console.WriteLine(result);
     }
-private static (string deploymentName, string endpoint, string apiKey) ReadSettings()
-{
-    var config = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json")
-        .Build();
+    private static (string deploymentName, string endpoint, string apiKey) ReadSettings()
+    {
+        var config = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
 
-    return (
-        config["AzureOpenAI:DeploymentName"] ?? throw new Exception("DeploymentName not found"),
-        config["AzureOpenAI:Endpoint"] ?? throw new Exception("Endpoint not found"),
-        config["AzureOpenAI:ApiKey"] ?? throw new Exception("ApiKey not found")
-    );
-}
+        return (
+            config["AzureOpenAI:DeploymentName"] ?? throw new Exception("DeploymentName not found"),
+            config["AzureOpenAI:Endpoint"] ?? throw new Exception("Endpoint not found"),
+            config["AzureOpenAI:ApiKey"] ?? throw new Exception("ApiKey not found")
+        );
+    }
 }

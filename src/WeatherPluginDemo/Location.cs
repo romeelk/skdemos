@@ -1,6 +1,6 @@
 using System;
 
-namespace WeatherPlugin;
+namespace WeatherPluginDemo;
 
 public class Location
 {

@@ -400,3 +400,5 @@ FodyWeavers.xsd
 # ignore .env files
 .env
 
+src/weatherplugin/appsettings.json
+src/WeatherPluginDemo/appsettings.json

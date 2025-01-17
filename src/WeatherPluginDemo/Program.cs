@@ -1,18 +1,35 @@
 ﻿using System.Net.Http.Json;
 using Newtonsoft.Json.Linq;
-using WeatherPlugin;
+using Microsoft.SemanticKernel;
+using Microsoft.Extensions.Configuration;
+
+using WeatherPluginDemo;
+using WeatherPluginDemo.Plugins;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 Console.WriteLine("Plugin that can call OpenWeatherMap API to get weather information");
 
 try
 {
+    var settings = ReadSettings();
+    
+    var kernel =  Kernel.CreateBuilder()
+        .AddAzureOpenAIChatCompletion(
+            deploymentName: settings.deploymentName,
+            endpoint: settings.endpoint,
+            apiKey: settings.apiKey)
+    .Build();
+
     Console.WriteLine("Reading city coordinates from file");
 
-    if(Environment.GetEnvironmentVariable("OPENWEATHERMAP_API_KEY") == null)
-    {
-        Console.WriteLine("Please set the OPENWEATHERMAP_API_KEY environment variable");
-        return;
-    }
+    var weatherApi = new WeatherPlugin(settings.weatherApiKey);
+
+    var weatherInfo = weatherApi.GetWeatherDataByCityNameAsync("London").GetAwaiter().GetResult();
+
+    Console.WriteLine("Calling Weather API directly to get weather information for London");
+
+    Console.WriteLine("Current temperature in London is: " + weatherInfo?.Temperature + "°C");
+
     var locations = ReadCîtyCoordinates();
 
     foreach(var item in locations)
@@ -20,20 +37,19 @@ try
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"City: {item.Value.City}, Lat: {item.Value.Lat}, Lon: {item.Value.Lon}, Country: {item.Value.Country}");
     }
-    Console.WriteLine("Attempt to lookup city coordinates for London and then weather");
 
-    if(locations.TryGetValue("London", out Location? value))
-    {
-        Console.WriteLine($"City: {value.City}, Lat: {value.Lat}, Lon: {value.Lon}, Country: {value.Country}");
+    Console.WriteLine("Loading WeatherPlugin into the kernel");
 
-        var weather = await GetWeather(value.Lat, value.Lon);
+    kernel.Plugins.AddFromObject(new WeatherPlugin(settings.weatherApiKey),nameof(WeatherPlugin));
 
-        Console.WriteLine(weather);
-    }
-    else
-    {
-        Console.WriteLine("City not found in the list of locations");
-    }  
+    var promptQuery = @"What is the current Weather in {{$city}}. Use the WeatherPlugin";
+
+    var promptFunction = kernel.CreateFunctionFromPrompt(promptQuery,new OpenAIPromptExecutionSettings(){ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions});
+    
+    Console.WriteLine("Enter a city to query the LLM for current weather");
+    var city = Console.ReadLine();
+    var result = await kernel.InvokeAsync(promptFunction,new KernelArguments() { ["city"] = city});
+    Console.WriteLine(result);
 }
 catch (HttpRequestException ex)
 {
@@ -52,7 +68,7 @@ static async Task<WeatherInfo> GetWeather(double lat, double lon)
     var weatherInfo = new WeatherInfo() {
         Lat = parsedWeatherInfo["coord"]?["lat"]?.Value<double>() ?? 0,
         Lon = parsedWeatherInfo["coord"]?["lon"]?.Value<double>() ?? 0,
-        Temparture = parsedWeatherInfo["main"]?["temp"]?.Value<double>() ?? 0,
+        Temperature = parsedWeatherInfo["main"]?["temp"]?.Value<double>() ?? 0,
         Description = parsedWeatherInfo["weather"]?.FirstOrDefault()?["description"]?.Value<string>() ?? "No description available"
     };
 
@@ -101,4 +117,19 @@ static Dictionary<string,Location> ReadCîtyCoordinates()
         locations.Add(location.City,location);
     }
     return locations;
+}
+
+static (string deploymentName, string endpoint, string apiKey, string weatherApiKey) ReadSettings()
+{
+    var config = new ConfigurationBuilder()
+        .SetBasePath(Directory.GetCurrentDirectory())
+        .AddJsonFile("appsettings.json")
+        .Build();
+
+    return (
+        config["AzureOpenAI:DeploymentName"] ?? throw new Exception("DeploymentName not found"),
+        config["AzureOpenAI:Endpoint"] ?? throw new Exception("Endpoint not found"),
+        config["AzureOpenAI:ApiKey"] ?? throw new Exception("ApiKey not found"),
+        config["OpenWeatherMap:ApiKey"] ?? throw new Exception("OpenWeatherMap ApiKey not found")
+    );
 }
