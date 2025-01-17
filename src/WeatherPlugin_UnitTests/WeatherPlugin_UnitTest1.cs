@@ -16,7 +16,7 @@ public class Tests
         Assert.Throws<ArgumentNullException>(() => new WeatherPlugin(apiKey));
     }
 
-[Test]
+    [Test]
     public async Task Given_InvalidKey_Then_ThrowsException()
     {
         ReadEnvironment.LoadEnvironmentVariables();
