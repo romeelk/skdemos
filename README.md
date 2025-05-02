@@ -1,6 +1,6 @@
 # SKDemos Repository
 
-Welcome to SKDemos (Semantic Kernel Demos) repository! This repository contains various demonstrations and examplesrelated to Semantic Kernel.
+Welcome to SKDemos (Semantic Kernel Demos) repository! This repository contains various demonstrations and examples related to Semantic Kernel.
 
 ## Overview
 
