@@ -32,11 +32,11 @@ public class HotelReservation_UnitTests
     {
         return new List<Room>
         {
-            new Room(RoomType.Single, 100.5f, "100"),
-            new Room(RoomType.Double, 100.5f, "101"),
-            new Room(RoomType.Single, 100.5f, "102"),
-            new Room(RoomType.Double, 100.5f, "103"),
-            new Room(RoomType.Single, 100.5f, "104")
+            new Room("hilton",RoomType.Single, 100.5f, "100"),
+            new Room("hilton",RoomType.Double, 100.5f, "101"),
+            new Room("hilton",RoomType.Single, 100.5f, "102"),
+            new Room("hilton",RoomType.Double, 100.5f, "103"),
+            new Room("hilton",RoomType.Single, 100.5f, "104")
         };
     }
 
@@ -87,12 +87,9 @@ public class HotelReservation_UnitTests
 
         var reservationService = new ReservationService(rooms, reservations.ToList());
 
-        var newReservation = new Reservation("rubbish hotel", "100", Convert.ToDateTime("20/01/2024"), Convert.ToDateTime("22/01/2024"), customer, RoomType.Single);
+        var newReservation = new Reservation("rubbish hotel", "101", Convert.ToDateTime("20/01/2024"), Convert.ToDateTime("22/01/2024"), customer, RoomType.Single);
 
-        var roomBooked = reservationService.Book(newReservation);
-
-        Assert.IsFalse(roomBooked);
-        Assert.IsFalse(reservationService.CheckReservationExists(newReservation));
+        Assert.ThrowsException<InvalidOperationException>(() => reservationService.Book(newReservation));
 
     }
 
@@ -107,9 +104,7 @@ public class HotelReservation_UnitTests
 
         var newReservation = new Reservation("White House", "101", Convert.ToDateTime("20/01/2024"), Convert.ToDateTime("22/01/2024"), customer, RoomType.Single);
 
-        var roomBooked = reservationService.Book(newReservation);
-
-        Assert.IsFalse(roomBooked);
+        Assert.ThrowsException<InvalidOperationException>(() => reservationService.Book(newReservation));
     }
 
     [TestMethod]
@@ -170,6 +165,22 @@ public class HotelReservation_UnitTests
         var reservationService = new ReservationService(rooms, reservations.ToList());
 
         var newReservation = new Reservation("hilton", "101", Convert.ToDateTime("21/01/2024"), Convert.ToDateTime("24/01/2024"), customer, RoomType.Single);
+
+        var roomBooked = reservationService.Book(newReservation);
+
+        Assert.IsFalse(roomBooked);
+    }
+
+    [TestMethod]
+    public void HotelReservationService_BookRoom_Returns_False_For_Reservation_With_Room_That_Does_Not_Exist()
+    {
+        var rooms = GetRooms();
+        var reservations = GetExistingReservations();
+        var customer = GetCustomer();
+
+        var reservationService = new ReservationService(rooms, reservations.ToList());
+
+        var newReservation = new Reservation("hilton", "109", Convert.ToDateTime("21/01/2024"), Convert.ToDateTime("22/01/2024"), customer, RoomType.Single);
 
         var roomBooked = reservationService.Book(newReservation);
 

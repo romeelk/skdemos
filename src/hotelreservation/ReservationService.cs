@@ -36,22 +36,25 @@ public class ReservationService
     /// <returns></returns>
     public bool Book(Reservation newReservation)
     {
+        if (!rooms.Any(t => t.HotelName.Equals(newReservation.HotelName)))
+            throw new InvalidOperationException("You cannot book for a hotel that does not exist");
+            
         if (!rooms.Any(t => t.RoomNo == newReservation.RoomId))
             return false;
 
-        if (!HasValidDateRange(newReservation))
+        if (!IsRooomAvailable(newReservation))
             return false;
 
         reservations.Add(newReservation);
         return true;
     }
 
-    private bool HasValidDateRange(Reservation newReservation)
+    private bool IsRooomAvailable(Reservation newReservation)
     {
-        return !reservations.Any(existing =>
+        return !reservations.Any(existing => newReservation.RoomType.Equals(existing.RoomType) && (
             (newReservation.StartDate >= existing.StartDate && newReservation.EndDate <= existing.EndDate) ||
             (newReservation.StartDate <= existing.StartDate && newReservation.EndDate <= existing.EndDate) ||
-            (newReservation.StartDate >= existing.StartDate && newReservation.StartDate <= existing.EndDate && newReservation.EndDate > existing.EndDate));
+            (newReservation.StartDate >= existing.StartDate && newReservation.StartDate <= existing.EndDate && newReservation.EndDate > existing.EndDate)));
     }
 
     public bool CheckReservationExists(Reservation reservation)
