@@ -10,7 +10,9 @@ public class Reservation
     private readonly DateTime? endDate;
     private readonly Customer guest;
     private readonly string roomId;
-    public Reservation(string hotelName, string roomId, DateTime? startDate, DateTime? endDate, Customer guest)
+    private readonly RoomType roomType;
+
+    public Reservation(string hotelName, string roomId, DateTime? startDate, DateTime? endDate, Customer guest, RoomType roomType)
     {
         ArgumentNullException.ThrowIfNull(hotelName, nameof(hotelName));
 
@@ -24,6 +26,7 @@ public class Reservation
         this.startDate = startDate;
         this.endDate = endDate;
         this.guest = guest;
+        this.roomType = roomType;
     }
 
     public string HotelName => hotelName;
@@ -31,5 +34,5 @@ public class Reservation
     public DateTime? EndDate => endDate;
     public string GuestName => guest.Name;
     public string RoomId => roomId;
-
+    public RoomType RoomType => roomType;
 }

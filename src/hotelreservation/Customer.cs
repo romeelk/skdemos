@@ -6,7 +6,6 @@ namespace HotelReservation;
 public class Customer
 {
     private readonly string firstName;
- 
     private readonly string lastName;
     private readonly string email;
     

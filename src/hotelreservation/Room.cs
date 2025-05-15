@@ -2,18 +2,20 @@
 
 namespace HotelReservation;
 
+public enum RoomType
+{
+    Single,
+    Double
+}
 
 public class Room
 {
-    private readonly string roomType;
+    private readonly RoomType roomType;
     private readonly float price;
     private readonly string roomNo;
     
-    public Room(string roomType, float price, string roomNo)
+    public Room(RoomType roomType, float price, string roomNo)
     {
-        if (string.IsNullOrWhiteSpace(roomType))
-            throw new ArgumentNullException(nameof(roomType));
-            
         if (string.IsNullOrWhiteSpace(roomNo))
             throw new ArgumentNullException(nameof(roomNo));
 
@@ -22,7 +24,7 @@ public class Room
         this.roomNo = roomNo;
     }
 
-    public string RoomType => roomType;
+    public RoomType RoomType => roomType;
 
     public float Price => price;
     public string RoomNo => roomNo;

@@ -25,22 +25,38 @@ public class ReservationService
         this.rooms = rooms ?? throw new ArgumentException("Rooms list cannot be null");
         if (!rooms.Any())
             throw new ArgumentException("Rooms list cannot be empty");
-            
+
         this.reservations = reservations ?? throw new ArgumentNullException("Reservations list cannot be null");
     }
     /// <summary>
-    /// 
+    /// Book a reservation on behalf oa customer.
+    /// Reservations can't be booked if dates overlap
     /// </summary>
     /// <param name="roomId"></param>
     /// <returns></returns>
     public bool Book(Reservation newReservation)
-    {   
-        if(!reservations.Any(t=>t.HotelName.Equals(newReservation.HotelName)))
+    {
+        if (!rooms.Any(t => t.RoomNo == newReservation.RoomId))
             return false;
-        
-        if(reservations.Any(t=>newReservation.StartDate >= t.StartDate &&  newReservation.EndDate <= t.EndDate) )
+
+        if (!HasValidDateRange(newReservation))
             return false;
+
+        reservations.Add(newReservation);
         return true;
+    }
+
+    private bool HasValidDateRange(Reservation newReservation)
+    {
+        return !reservations.Any(existing =>
+            (newReservation.StartDate >= existing.StartDate && newReservation.EndDate <= existing.EndDate) ||
+            (newReservation.StartDate <= existing.StartDate && newReservation.EndDate <= existing.EndDate) ||
+            (newReservation.StartDate >= existing.StartDate && newReservation.StartDate <= existing.EndDate && newReservation.EndDate > existing.EndDate));
+    }
+
+    public bool CheckReservationExists(Reservation reservation)
+    {
+        return reservations.Any(t => t.RoomId.Equals(reservation.RoomId) && t.RoomType.Equals(reservation.RoomType) && t.StartDate.Equals(reservation.StartDate) && t.EndDate.Equals(reservation.EndDate));
     }
 }
 
